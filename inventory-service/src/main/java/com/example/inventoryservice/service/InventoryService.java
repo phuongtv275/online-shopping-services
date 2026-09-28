@@ -1,5 +1,7 @@
 package com.example.inventoryservice.service;
 
+import com.example.inventoryservice.dto.DeductStockRequest;
+import com.example.inventoryservice.dto.DeductStockResponse;
 import com.example.inventoryservice.dto.InventoryRequest;
 import com.example.inventoryservice.dto.InventoryResponse;
 import com.example.inventoryservice.dto.PageResponse;
@@ -13,6 +15,8 @@ public interface InventoryService {
     InventoryResponse createOrUpdateInventory(InventoryRequest request);
 
     PageResponse<InventoryResponse> getAllInventories(Pageable pageable);
+
+    DeductStockResponse deductStock(DeductStockRequest request);
 
     void processOrderCreatedEvent(OrderCreatedEvent event);
 }
