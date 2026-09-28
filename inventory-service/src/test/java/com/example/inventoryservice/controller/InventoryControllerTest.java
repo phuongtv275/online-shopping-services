@@ -128,4 +128,61 @@ class InventoryControllerTest {
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.totalElements").value(1));
     }
+
+    @Test
+    void deductStock_WhenStockAvailable_ShouldReturn200() throws Exception {
+        com.example.inventoryservice.dto.DeductStockRequest request = com.example.inventoryservice.dto.DeductStockRequest.builder()
+                .productId(1L)
+                .quantity(2)
+                .build();
+
+        com.example.inventoryservice.dto.DeductStockResponse response = com.example.inventoryservice.dto.DeductStockResponse.builder()
+                .productId(1L)
+                .deductedQuantity(2)
+                .remainingQuantity(48)
+                .message("Trừ tồn kho thành công")
+                .build();
+
+        when(inventoryService.deductStock(any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/v1/inventories/deduct")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.productId").value(1))
+                .andExpect(jsonPath("$.data.remainingQuantity").value(48));
+    }
+
+    @Test
+    void deductStock_WhenQuantityZeroOrNegative_ShouldReturn400() throws Exception {
+        com.example.inventoryservice.dto.DeductStockRequest request = com.example.inventoryservice.dto.DeductStockRequest.builder()
+                .productId(1L)
+                .quantity(0)
+                .build();
+
+        mockMvc.perform(post("/api/v1/inventories/deduct")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void deductStock_WhenInsufficientStock_ShouldReturn400() throws Exception {
+        com.example.inventoryservice.dto.DeductStockRequest request = com.example.inventoryservice.dto.DeductStockRequest.builder()
+                .productId(1L)
+                .quantity(50)
+                .build();
+
+        when(inventoryService.deductStock(any()))
+                .thenThrow(new com.example.inventoryservice.exception.InsufficientStockException("Sản phẩm đã hết hàng"));
+
+        mockMvc.perform(post("/api/v1/inventories/deduct")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
 }
+

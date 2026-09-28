@@ -27,6 +27,11 @@ spring:
         spring.json.trusted.packages: "*"
         spring.json.use.type.headers: false
         spring.json.value.default.type: com.example.inventoryservice.event.OrderCreatedEvent
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:rikkeiacademy}
 
 eureka:
   client:
