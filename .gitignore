@@ -1,0 +1,25 @@
+# IDE & Editor files
+.idea/
+*.iml
+.vscode/
+*.ipr
+*.iws
+
+# Gradle & Build artifacts
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+bin/
+out/
+
+# Log files
+*.log
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Project specification & instruction files (private)
+AGENTS.md
+plan/
+.agents/
