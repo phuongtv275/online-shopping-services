@@ -63,4 +63,23 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+
+    public static final String PROMOTION_UPDATES_CHANNEL = "promotion-updates";
+
+    @Bean
+    public org.springframework.data.redis.listener.ChannelTopic promotionTopic() {
+        return new org.springframework.data.redis.listener.ChannelTopic(PROMOTION_UPDATES_CHANNEL);
+    }
+
+    @Bean
+    public org.springframework.data.redis.listener.RedisMessageListenerContainer redisMessageListenerContainer(
+            RedisConnectionFactory connectionFactory,
+            com.example.productservice.subscriber.PromotionMessageSubscriber promotionMessageSubscriber,
+            org.springframework.data.redis.listener.ChannelTopic promotionTopic) {
+        org.springframework.data.redis.listener.RedisMessageListenerContainer container =
+                new org.springframework.data.redis.listener.RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(promotionMessageSubscriber, promotionTopic);
+        return container;
+    }
 }
