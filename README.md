@@ -74,7 +74,7 @@ flowchart TB
 
 ---
 
-## 2. Ma trận Dịch vụ (Service Matrix)
+## 2. Services
 
 | Dịch vụ | Cổng | Cơ sở dữ liệu | Eureka ID | Giao tiếp Đồng bộ (Sync) | Giao tiếp Bất đồng bộ (Async) & Cache |
 | :--- | :---: | :---: | :---: | :--- | :--- |
@@ -87,29 +87,3 @@ flowchart TB
 | **`shipping-service`** | `8085` | `shipping_db` | `SHIPPING-SERVICE` | OpenFeign -> `ORDER-SERVICE` | Pub: Kafka topic `shipping-events` |
 | **`notification-service`** | `8086` | - | `NOTIFICATION-SERVICE` | - | Sub: Kafka topics `order-events`, `shipping-events` |
 | **`flashsale-service`** | `8087` | Redis | `FLASHSALE-SERVICE` | Resilience4j RateLimiter | Redisson Lock In-Memory, Pub: `flashsale-order-events` |
-
----
-
-## 3. Lộ trình Triển khai 6 Feature Branches
-
-Mỗi bài tập trong `.agents/plan` được phát triển trên một Feature Branch riêng biệt:
-
-1. **`feature/exercise-01-product-redis-cache`** (exercise01.md):
-   - Xây dựng `eureka-server` (8761), `api-gateway` (8080) và `product-service` (8081).
-   - Triển khai Redis Cache-aside (TTL 30 phút, `@CacheEvict`), Resilience4j RateLimiter cho endpoint xem sản phẩm.
-2. **`feature/exercise-02-order-kafka-async`** (exercise02.md):
-   - Xây dựng `order-service` (8083), `inventory-service` (8082), `notification-service` (8086).
-   - Tích hợp OpenFeign + CircuitBreaker gọi sang `product-service`.
-   - Kafka Producer/Consumers cho topic `order-events` (trừ kho và gửi mail bất đồng bộ).
-3. **`feature/exercise-03-inventory-distributed-lock`** (exercise03.md):
-   - Triển khai **Redisson Distributed Lock** (`lock:product:{id}`) trong `inventory-service`.
-   - Chống bán lố (overselling) khi 100 luồng đồng thời tranh chấp trừ kho.
-4. **`feature/exercise-04-promotion-redis-pubsub`** (exercise04.md):
-   - Xây dựng `promotion-service` (8084) với OpenFeign.
-   - Redis Pub/Sub trên channel `promotion-updates` xóa cache sản phẩm tức thì trong `product-service` (<1s).
-5. **`feature/exercise-05-shipping-order-choreography`** (exercise05.md):
-   - Xây dựng `shipping-service` (8085).
-   - Kafka topic `shipping-events`: Chuyển trạng thái đơn hàng sang `COMPLETED` trong `order-service` và gửi thông báo trong `notification-service`.
-6. **`feature/exercise-06-flashsale-immortal-engine`** (exercise06.md):
-   - Xây dựng `flashsale-service` (8087) với Resilience4j RateLimiter.
-   - Preload tồn kho lên Redis, Redisson Lock trừ kho In-Memory siêu tốc (<5ms), bắn `flashsale-order-events` sang Kafka để `order-service` ghi DB PostgreSQL thong thả.
