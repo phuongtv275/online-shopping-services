@@ -109,4 +109,22 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderMapper::toDto);
         return PageResponse.of(page);
     }
+
+    @Override
+    @Transactional
+    public void completeOrder(Long orderId, String trackingNumber) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng ID: " + orderId));
+
+        // Kiểm tra Idempotency chống xử lý duplicate
+        if ("COMPLETED".equalsIgnoreCase(order.getStatus())) {
+            log.info("Đơn hàng ID {} đã ở trạng thái COMPLETED từ trước. Bỏ qua cập nhật từ event giao hàng.", orderId);
+            return;
+        }
+
+        order.setStatus("COMPLETED");
+        orderRepository.save(order);
+        log.info("CHOREOGRAPHY THÀNH CÔNG: Đã cập nhật đơn hàng ID {} thành trạng thái COMPLETED dựa trên mã vận đơn {}",
+                orderId, trackingNumber);
+    }
 }

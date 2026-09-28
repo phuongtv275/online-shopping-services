@@ -38,4 +38,21 @@ class NotificationServiceTest {
 
         assertDoesNotThrow(() -> notificationService.sendOrderConfirmationNotification(event));
     }
+
+    @Test
+    void sendDeliverySuccessNotification_ShouldExecuteWithoutException() {
+        com.example.notificationservice.event.ShippingStatusEvent event =
+                com.example.notificationservice.event.ShippingStatusEvent.builder()
+                        .shippingId(1L)
+                        .orderId(202L)
+                        .trackingNumber("SHIP-20260928-ABCD1234")
+                        .status("DELIVERED")
+                        .shipperName("Nguyen Van Shipper")
+                        .shipperPhone("0987654321")
+                        .shippingAddress("456 Nguyen Trai, Ha Noi")
+                        .deliveredAt(Instant.now())
+                        .build();
+
+        assertDoesNotThrow(() -> notificationService.sendDeliverySuccessNotification(event));
+    }
 }

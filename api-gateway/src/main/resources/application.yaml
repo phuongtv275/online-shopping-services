@@ -27,6 +27,10 @@ spring:
               uri: lb://PROMOTION-SERVICE
               predicates:
                 - Path=/api/v1/promotions/**
+            - id: shipping-service
+              uri: lb://SHIPPING-SERVICE
+              predicates:
+                - Path=/api/v1/shippings/**
 
 eureka:
   client:
