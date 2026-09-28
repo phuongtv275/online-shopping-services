@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -110,5 +111,41 @@ class OrderServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(request));
         verify(orderRepository, never()).save(any());
         verify(orderEventProducer, never()).publishOrderCreatedEvent(any());
+    }
+
+    @Test
+    void completeOrder_WhenOrderExistsAndPending_ShouldUpdateToCompleted() {
+        Order pendingOrder = Order.builder()
+                .id(101L)
+                .status("PENDING")
+                .build();
+
+        when(orderRepository.findById(101L)).thenReturn(Optional.of(pendingOrder));
+
+        orderService.completeOrder(101L, "SHIP-20260928-ABCD1234");
+
+        assertEquals("COMPLETED", pendingOrder.getStatus());
+        verify(orderRepository).save(pendingOrder);
+    }
+
+    @Test
+    void completeOrder_WhenAlreadyCompleted_ShouldSkipSave() {
+        Order completedOrder = Order.builder()
+                .id(101L)
+                .status("COMPLETED")
+                .build();
+
+        when(orderRepository.findById(101L)).thenReturn(Optional.of(completedOrder));
+
+        orderService.completeOrder(101L, "SHIP-20260928-ABCD1234");
+
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void completeOrder_WhenNotFound_ShouldThrowResourceNotFoundException() {
+        when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> orderService.completeOrder(999L, "SHIP-123"));
     }
 }

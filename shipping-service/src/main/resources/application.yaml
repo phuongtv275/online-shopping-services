@@ -1,11 +1,11 @@
 server:
-  port: 8083
+  port: 8085
 
 spring:
   application:
-    name: order-service
+    name: shipping-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_db
+    url: jdbc:postgresql://localhost:5432/shipping_db
     username: ${DB_USERNAME:rikkei}
     password: ${DB_PASSWORD:rikkei}
     driver-class-name: org.postgresql.Driver
@@ -26,15 +26,6 @@ spring:
       properties:
         enable.idempotence: true
         spring.json.add.type.headers: false
-    consumer:
-      group-id: order-shipping-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-        spring.json.use.type.headers: false
-        spring.json.value.default.type: com.example.orderservice.event.ShippingStatusEvent
   cloud:
     openfeign:
       circuitbreaker:
@@ -43,7 +34,7 @@ spring:
 resilience4j:
   circuitbreaker:
     instances:
-      productServiceClient:
+      orderServiceClient:
         sliding-window-size: 10
         failure-rate-threshold: 50
         wait-duration-in-open-state: 5000ms
@@ -62,3 +53,5 @@ eureka:
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [cid:%X{correlationId:-N/A}] %logger{36} - %msg%n"
+  level:
+    com.example.shippingservice: INFO

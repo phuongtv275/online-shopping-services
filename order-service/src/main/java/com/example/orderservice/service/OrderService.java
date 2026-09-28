@@ -12,4 +12,6 @@ public interface OrderService {
     OrderResponse getOrderById(Long id);
 
     PageResponse<OrderResponse> getAllOrders(Pageable pageable);
+
+    void completeOrder(Long orderId, String trackingNumber);
 }

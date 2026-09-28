@@ -2,6 +2,7 @@ package com.example.notificationservice.service.impl;
 
 import com.example.notificationservice.event.OrderCreatedEvent;
 import com.example.notificationservice.event.OrderItemDto;
+import com.example.notificationservice.event.ShippingStatusEvent;
 import com.example.notificationservice.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -41,5 +42,30 @@ public class NotificationServiceImpl implements NotificationService {
         log.info(invoiceBuilder.toString());
         log.info("Đã gửi email xác nhận đơn hàng #{} thành công tới địa chỉ: {}",
                 event.getOrderId(), event.getCustomerEmail());
+    }
+
+    /**
+     * Giả lập gửi tin nhắn/email chúc mừng khách hàng khi Shipper giao hàng thành công:
+     * Được kích hoạt tự động qua Kafka Event-Driven Choreography từ topic 'shipping-events'.
+     */
+    @Override
+    public void sendDeliverySuccessNotification(ShippingStatusEvent event) {
+        StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("\n=================== THÔNG BÁO GIAO HÀNG THÀNH CÔNG ===================\n");
+        msgBuilder.append("CHÚC MỪNG QUÝ KHÁCH HÀNG!\n");
+        msgBuilder.append("Đơn hàng #").append(event.getOrderId()).append(" đã được giao thành công!\n");
+        msgBuilder.append("Mã vận đơn: ").append(event.getTrackingNumber()).append("\n");
+        msgBuilder.append("Shipper thực hiện: ").append(event.getShipperName()).append(" (SĐT: ").append(event.getShipperPhone()).append(")\n");
+        msgBuilder.append("Địa chỉ giao nhận: ").append(event.getShippingAddress()).append("\n");
+        msgBuilder.append("Thời gian giao hàng: ").append(event.getDeliveredAt()).append("\n");
+        if (event.getNote() != null && !event.getNote().isBlank()) {
+            msgBuilder.append("Ghi chú: ").append(event.getNote()).append("\n");
+        }
+        msgBuilder.append("Cảm ơn quý khách đã tin tưởng và mua sắm tại cửa hàng!\n");
+        msgBuilder.append("======================================================================");
+
+        log.info(msgBuilder.toString());
+        log.info("CHOREOGRAPHY: Đã gửi thông báo giao hàng thành công cho đơn hàng #{} (Mã vận đơn: {})",
+                event.getOrderId(), event.getTrackingNumber());
     }
 }
